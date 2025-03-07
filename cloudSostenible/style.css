@@ -1,0 +1,127 @@
+/* Estilos generales
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #007BFF, #FFA500);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+} */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to right, #007BFF, #FFA500);
+    color: #333;
+}
+
+/* Estilos Logo */
+header .logo img {
+    height: 50px;
+    color: white;
+}
+
+/* Estilos encabezado */
+header {
+    background: linear-gradient(to right, #007BFF, #FFA500);
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* Estilos pie */
+footer {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+    color: #333;
+}
+.login-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 350px;
+    min-height: 250px;
+    padding: 2rem;
+    margin: auto;
+
+
+}
+input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+button {
+    background: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+button:hover {
+    background: #0056b3;
+}
+
+.dash {
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+
+    width: 350px;
+    min-height: 250px;
+    padding: 2rem;
+    margin: auto;
+}
+
+.menu {
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Estilos Cookies */
+.cookie-popup {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background-color: #333;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.cookie-popup p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.cookie-popup button {
+    background-color: #ff8c42;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cookie-popup button:hover {
+    background-color: #e67e22;
+}
+
+
