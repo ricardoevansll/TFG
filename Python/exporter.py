@@ -6,18 +6,18 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Definir métricas en Prometheus
+# Métricas Prometheus
 cpu_usage = Gauge('cpu_usage_percent', 'Uso de CPU en %')
 power_consumption = Gauge('power_consumption_watts', 'Consumo estimado de energía (W)')
 carbon_emission = Gauge('carbon_emission_kg', 'Huella de carbono estimada (kg CO2)')
 pue_metric = Gauge('pue_value', 'PUE estimado del sistema')
 
-# Configurar conexión a MySQL
+# Conexión mysql
 db_config = {
     "host": "localhost",
-    "user": "usuario_mysql",  # Reemplaza con tu usuario real de MySQL
-    "password": "password_mysql",  # Reemplaza con tu contraseña real
-    "database": "energia"
+    "user": "revans",
+    "password": "%Tuto2323",
+    "database": "sostenible"
 }
 
 def get_recurso_id():
@@ -33,6 +33,22 @@ def get_recurso_id():
     except Exception as e:
         print("Error al obtener recurso:", e)
         return None
+
+# Consultar si el recurso usa energía renovable
+def get_energia_renovable(recurso_id):
+    """ Obtiene si el recurso usa energía renovable (1 = Sí, 0 = No) """
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute("SELECT energia_renovable FROM recurso WHERE id_recurso = %s", (recurso_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return result[0] if result else 0  # 0 si no hay dato
+    except Exception as e:
+        print("Error al obtener energía renovable:", e)
+        return 0
+
 
 def save_to_mysql(recurso_id, timestamp, pue, carbon):
     """ Guarda los valores en la base de datos MySQL """
@@ -59,6 +75,7 @@ def save_to_mysql(recurso_id, timestamp, pue, carbon):
 def metrics():
     """ Genera y expone métricas en formato Prometheus """
     recurso_id = get_recurso_id()
+    energia_renovable = get_energia_renovable(recurso_id)
     
     # Simulación del uso de CPU en porcentaje
     cpu = random.uniform(10, 90)
@@ -68,12 +85,17 @@ def metrics():
     power = ((cpu / 100) * 200) + 50  # 200W en carga, 50W en idle
     power_consumption.set(power)
 
-    # Cálculo de la huella de carbono (0.4 kg CO₂/kWh)
+   # Cálculo de la huella de carbono (0.4 kg CO₂/kWh por defecto)
     carbon = (power / 1000) * 0.4
+    if energia_renovable == 1:
+        carbon = 0.02  # Se reduce a un valor mínimo
     carbon_emission.set(carbon)
 
-    # Cálculo del PUE estimado (entre 1.5 y 2.5)
+    # Reducción de PUE si la energía es renovable
     pue = round(random.uniform(1.5, 2.5), 2)
+    if energia_renovable == 1:
+        pue *= 0.8  # Reducción del 20%
+        pue = round(pue, 2)
     pue_metric.set(pue)
 
     timestamp = datetime.now()  # Capturamos la fecha y hora actuales

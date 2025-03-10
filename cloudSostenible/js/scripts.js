@@ -7,12 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const cookiePopup = document.getElementById('cookie-popup');
     const acceptCookiesButton = document.getElementById('accept-cookies');
 
-    // Verificar si el usuario ya aceptó las cookies
+    // Verificar aceptación de cookies
     if (!localStorage.getItem('cookies-accepted')) {
         // Mostrar el popup con una animación
         setTimeout(() => {
             cookiePopup.classList.add('visible');
-        }, 1000); // Esperar 1 segundo antes de mostrar el popup
+        }, 1000); // 1 segundo para mostrar el popup
     }
 
     // Ocultar el popup al hacer clic en "Aceptar"
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('cookies-accepted', 'true');
         cookiePopup.classList.remove('visible'); // Ocultar con animación
         setTimeout(() => {
-            cookiePopup.style.display = 'none'; // Ocultar completamente después de la animación
-        }, 300); // Esperar a que termine la animación (0.3s)
+            cookiePopup.style.display = 'none'; // Ocultar cdespués de la animación
+        }, 300); // Espera (0.3s)
     });
 });
