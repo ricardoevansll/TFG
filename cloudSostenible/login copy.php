@@ -6,23 +6,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
     
-    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    $terms_accepted = $user ? $user['terms_accepted'] : 0; // 1 si ya aceptó, 0 si no
-    
-    if ($user && password_verify($password, $user['password'])) {
-        if (isset($_POST['accept_terms']) && !$terms_accepted) {
-            $stmt = $pdo->prepare("UPDATE usuario SET terms_accepted = 1 WHERE iduser = ?");
-            $stmt->execute([$user['iduser']]);
-        }
-        $_SESSION['user_id'] = $user['iduser'];
-        $_SESSION['rol'] = $user['rol'];
-        header("Location: index.php");
-        exit();
+    if (!isset($_POST['accept_terms'])) {
+        $error = "Debes aceptar las condiciones para continuar.";
     } else {
+        $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['iduser'];
+            $_SESSION['rol'] = $user['rol'];
+            header("Location: index.php"); // goto index.php en lugar de usuarios.php
+            exit();
+        } else {
         $error = "Credenciales inválidas";
+        }
     }
 }
 ?>
