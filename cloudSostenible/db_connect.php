@@ -1,8 +1,8 @@
 <?php
 $host = 'localhost';
-$db = 'sostenible';
-$user = 'revans';
-$pass = '%Tuto2323';
+$db = 'database';
+$user = 'user';
+$pass = 'pass';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);
