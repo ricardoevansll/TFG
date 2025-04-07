@@ -43,37 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = "Alerta agregada exitosamente";
             }
         }
-
-        if (isset($_POST['edit'])) {
-            $id = filter_input(INPUT_POST, 'id_alerta', FILTER_VALIDATE_INT);
-            $id_usuario = filter_input(INPUT_POST, 'id_usuario', FILTER_VALIDATE_INT);
-            $id_recurso = filter_input(INPUT_POST, 'id_recurso', FILTER_VALIDATE_INT);
-            $umbral_pue = filter_input(INPUT_POST, 'umbral_pue', FILTER_VALIDATE_FLOAT);
-            $umbral_carbono = filter_input(INPUT_POST, 'umbral_carbono', FILTER_VALIDATE_FLOAT);
-
-            if (!$id) $errors[] = "ID inválido";
-            if (!$id_usuario) $errors[] = "Usuario inválido";
-            if (!$id_recurso) $errors[] = "Recurso inválido";
-            if ($umbral_pue === false || $umbral_pue < 0) $errors[] = "Umbral PUE inválido";
-            if ($umbral_carbono === false || $umbral_carbono < 0) $errors[] = "Umbral de carbono inválido";
-
-            if (empty($errors)) {
-                $stmt = $pdo->prepare("UPDATE alertas SET id_usuario = ?, id_recurso = ?, umbral_pue = ?, umbral_carbono = ? WHERE id_alerta = ?");
-                $stmt->execute([$id_usuario, $id_recurso, $umbral_pue, $umbral_carbono, $id]);
-                $success = "Alerta actualizada exitosamente";
-            }
-        }
-
-        if (isset($_POST['delete']) && $is_admin) { // Solo admin puede eliminar
-            $id = filter_input(INPUT_POST, 'id_alerta', FILTER_VALIDATE_INT);
-            if (!$id) {
-                $errors[] = "ID inválido";
-            } else {
-                $stmt = $pdo->prepare("DELETE FROM alertas WHERE id_alerta = ?");
-                $stmt->execute([$id]);
-                $success = "Alerta eliminada exitosamente";
-            }
-        }
     } catch (PDOException $e) {
         $errors[] = "Error en la base de datos: " . $e->getMessage();
     }
@@ -85,13 +54,15 @@ $recursos = getRecursos($pdo);
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <title>Alertas-cloudSostenible</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/alerts.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-<header>
+    <header>
         <div class="logo">
             <a href="index.php"><img src="assets/cloudSostenible.png" alt="Logo cloudSostenible"></a>
         </div>
@@ -101,7 +72,8 @@ $recursos = getRecursos($pdo);
             <a href="fuentes.php">Fuentes-Energía</a>
             <a href="recursos.php">Recursos</a>
             <a href="alertas.php">Alertas</a>
-            <a href="http://192.168.23.132:3000/d/eef0c6h1h296od/sostenible?orgId=1&from=now-6h&to=now&timezone=browser" target="_blank">Monitoreo</a>
+            <a href="http://192.168.23.132:3000/d/fegfwr5rur8xse/panel-cloudsostenible?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s" target="_blank">Monitoreo</a>
+            <a href="contacto.php">Contacto</a>
             <a href="logout.php">Salir</a>
         </nav>
     </header>
@@ -133,7 +105,7 @@ $recursos = getRecursos($pdo);
                 <?php foreach ($recursos as $recurso): ?>
                     <option value="<?php echo $recurso['id_recurso']; ?>"><?php echo htmlspecialchars($recurso['nombre']); ?></option>
                 <?php endforeach; ?>
-            </select>
+            </select><br/>
             <input type="number" step="0.01" name="umbral_pue" placeholder="Umbral PUE" required>
             <input type="number" step="0.01" name="umbral_carbono" placeholder="Umbral Carbono" required><br/>
             <br/>
@@ -141,27 +113,20 @@ $recursos = getRecursos($pdo);
         </form>
     </div>
 
-    <h2>Listado de Alertas</h2>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Usuario</th>
-            <th>Recurso</th>
-            <th>Umbral PUE</th>
-            <th>Umbral Carbono</th>
-            <th>Fecha</th>
-            <th>Acciones</th>
-        </tr>
+    <div class="search-container">
+        <input type="text" id="search" class="search-bar" placeholder="Buscar por usuario o recurso...">
+    </div>
+    <div class="card-container" id="alerts-list">
         <?php foreach ($alertas as $alerta): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($alerta['id_alerta']); ?></td>
-            <td><?php echo htmlspecialchars($alerta['usuario_nombre']); ?></td>
-            <td><?php echo htmlspecialchars($alerta['recurso_nombre']); ?></td>
-            <td><?php echo htmlspecialchars($alerta['umbral_pue']); ?></td>
-            <td><?php echo htmlspecialchars($alerta['umbral_carbono']); ?></td>
-            <td><?php echo htmlspecialchars($alerta['fecha']); ?></td>
-            <td>
-                <form method="POST" style="display:inline;">
+            <div class="card" data-id="<?php echo $alerta['id_alerta']; ?>">
+                <div class="info">
+                    <h3><?php echo htmlspecialchars($alerta['usuario_nombre']); ?></h3>
+                    <p><i class="fas fa-server"></i> Recurso: <?php echo htmlspecialchars($alerta['recurso_nombre']); ?></p>
+                    <p><i class="fas fa-tachometer-alt"></i> Umbral PUE: <?php echo htmlspecialchars($alerta['umbral_pue']); ?></p>
+                    <p><i class="fas fa-leaf"></i> Umbral Carbono: <?php echo htmlspecialchars($alerta['umbral_carbono']); ?></p>
+                    <p><i class="fas fa-clock"></i> Fecha: <?php echo htmlspecialchars($alerta['fecha']); ?></p>
+                </div>
+                <form class="edit-form" method="POST" action="update_alerts.php">
                     <input type="hidden" name="id_alerta" value="<?php echo $alerta['id_alerta']; ?>">
                     <select name="id_usuario" required>
                         <?php foreach ($usuarios as $usuario): ?>
@@ -175,24 +140,28 @@ $recursos = getRecursos($pdo);
                     </select>
                     <input type="number" step="0.01" name="umbral_pue" value="<?php echo htmlspecialchars($alerta['umbral_pue']); ?>" required>
                     <input type="number" step="0.01" name="umbral_carbono" value="<?php echo htmlspecialchars($alerta['umbral_carbono']); ?>" required>
-                    <button type="submit" name="edit">Actualizar</button>
+                    <button type="submit" class="save-btn">Guardar</button>
                 </form>
-                <?php if ($is_admin): ?>
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="id_alerta" value="<?php echo $alerta['id_alerta']; ?>">
-                        <button type="submit" name="delete" onclick="return confirm('¿Seguro que desea eliminar?')">Eliminar</button>
-                    </form>
-                <?php endif; ?>
-            </td>
-        </tr>
+                <div class="actions">
+                    <button class="edit-btn"><i class="fas fa-edit"></i> Editar</button>
+                    <?php if ($is_admin): ?>
+                        <button class="delete-btn" data-id="<?php echo $alerta['id_alerta']; ?>"><i class="fas fa-trash"></i> Eliminar</button>
+                    <?php endif; ?>
+                </div>
+            </div>
         <?php endforeach; ?>
-    </table><br/>
+    </div><br/>
     <br/>
-    <a href="index.php">Regresar a inicio</a>
-    <a href="logout.php">Cerrar sesión</a>
+    <div class="cierre">
+        <a href="index.php">Inicio</a>
+        <a href="logout.php">Cerrar sesión</a>
+    </div>
+    <br/>
+    <br/>
     <footer>
-        <p>&copy; 2025 cloudSostenible | <a href="politicas.html">Políticas</a></p>
+        <p>&copy; 2025 cloudSostenible | <a href="politicas.php">Políticas y Condiciones</a></p>
     </footer>
-    <script src="js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/alerts.js"></script>
 </body>
 </html>

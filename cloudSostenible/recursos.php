@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tipo = $_POST['tipo'];
             $estado = $_POST['estado'];
             $id_energia = filter_input(INPUT_POST, 'id_energia', FILTER_VALIDATE_INT) ?: null;
-            $energia_renovable = isset($_POST['energia_renovable']) ? 1 : 0; // 1 si está marcado, 0 si no
+            $energia_renovable = isset($_POST['energia_renovable']) ? 1 : 0;
 
             if (empty($nombre)) $errors[] = "El nombre es requerido";
             if (!in_array($tipo, ['servidor', 'db', 'otro'])) $errors[] = "Tipo inválido";
@@ -33,37 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("INSERT INTO recurso (nombre, tipo, estado, id_energia, energia_renovable) VALUES (?, ?, ?, ?, ?)");
                 $stmt->execute([$nombre, $tipo, $estado, $id_energia, $energia_renovable]);
                 $success = "Recurso agregado exitosamente";
-            }
-        }
-
-        if (isset($_POST['edit'])) {
-            $id = filter_input(INPUT_POST, 'id_recurso', FILTER_VALIDATE_INT);
-            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
-            $tipo = $_POST['tipo'];
-            $estado = $_POST['estado'];
-            $id_energia = filter_input(INPUT_POST, 'id_energia', FILTER_VALIDATE_INT) ?: null;
-            $energia_renovable = isset($_POST['energia_renovable']) ? 1 : 0; // 1 si está marcado, 0 si no
-
-            if (!$id) $errors[] = "ID inválido";
-            if (empty($nombre)) $errors[] = "El nombre es requerido";
-            if (!in_array($tipo, ['servidor', 'db', 'otro'])) $errors[] = "Tipo inválido";
-            if (!in_array($estado, ['activo', 'inactivo'])) $errors[] = "Estado inválido";
-
-            if (empty($errors)) {
-                $stmt = $pdo->prepare("UPDATE recurso SET nombre = ?, tipo = ?, estado = ?, id_energia = ?, energia_renovable = ? WHERE id_recurso = ?");
-                $stmt->execute([$nombre, $tipo, $estado, $id_energia, $energia_renovable, $id]);
-                $success = "Recurso actualizado exitosamente";
-            }
-        }
-
-        if (isset($_POST['delete']) && $is_admin) { // Solo admin puede eliminar
-            $id = filter_input(INPUT_POST, 'id_recurso', FILTER_VALIDATE_INT);
-            if (!$id) {
-                $errors[] = "ID inválido";
-            } else {
-                $stmt = $pdo->prepare("DELETE FROM recurso WHERE id_recurso = ?");
-                $stmt->execute([$id]);
-                $success = "Recurso eliminado exitosamente";
             }
         }
     } catch (PDOException $e) {
@@ -76,13 +45,15 @@ $fuentes = getFuentes($pdo);
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <title>Recurso-cloudSostenible</title>
+    <link rel="stylesheet" href="css/resources.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <header>
+<header>
         <div class="logo">
             <a href="index.php"><img src="assets/cloudSostenible.png" alt="Logo cloudSostenible"></a>
         </div>
@@ -92,7 +63,8 @@ $fuentes = getFuentes($pdo);
             <a href="fuentes.php">Fuentes-Energía</a>
             <a href="recursos.php">Recursos</a>
             <a href="alertas.php">Alertas</a>
-            <a href="http://192.168.23.132:3000/d/eef0c6h1h296od/sostenible?orgId=1&from=now-6h&to=now&timezone=browser" target="_blank">Monitoreo</a>
+            <a href="http://192.168.23.132:3000/d/fegfwr5rur8xse/panel-cloudsostenible?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s" target="_blank">Monitoreo</a>
+            <a href="contacto.php">Contacto</a>
             <a href="logout.php">Salir</a>
         </nav>
     </header>
@@ -133,31 +105,23 @@ $fuentes = getFuentes($pdo);
             <br/>
             <button type="submit" name="add">Agregar</button>
         </form>
-    </div>
+    </div><br/>
 
-    <h2>Listado de Recursos</h2>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Estado</th>
-            <th>Fuente</th>
-            <th>Energía Renovable</th>
-            <th>Fecha</th>
-            <th>Acciones</th>
-        </tr>
+    <div class="search-container">
+        <input type="text" id="search" class="search-bar" placeholder="Buscar por nombre o tipo de recurso...">
+    </div>
+    <div class="card-container" id="resource-list">
         <?php foreach ($recursos as $recurso): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($recurso['id_recurso']); ?></td>
-            <td><?php echo htmlspecialchars($recurso['nombre']); ?></td>
-            <td><?php echo htmlspecialchars($recurso['tipo']); ?></td>
-            <td><?php echo htmlspecialchars($recurso['estado']); ?></td>
-            <td><?php echo $recurso['fuente_nombre'] ? htmlspecialchars($recurso['fuente_nombre']) : 'Sin fuente'; ?></td>
-            <td><?php echo $recurso['energia_renovable'] ? 'Sí' : 'No'; ?></td>
-            <td><?php echo htmlspecialchars($recurso['fecha']); ?></td>
-            <td>
-                <form method="POST" style="display:inline;">
+            <div class="card <?php echo $recurso['estado'] === 'activo' ? 'estado-activo' : 'estado-inactivo'; ?>" data-id="<?php echo $recurso['id_recurso']; ?>">
+                <div class="info">
+                    <h3><?php echo htmlspecialchars($recurso['nombre']); ?></h3>
+                    <p><i class="fas fa-server"></i> Tipo: <?php echo htmlspecialchars($recurso['tipo']); ?></p>
+                    <p><i class="fas fa-toggle-<?php echo $recurso['estado'] === 'activo' ? 'on' : 'off'; ?>"></i> Estado: <?php echo htmlspecialchars($recurso['estado']); ?></p>
+                    <p><i class="fas fa-plug"></i> Fuente: <?php echo $recurso['fuente_nombre'] ? htmlspecialchars($recurso['fuente_nombre']) : 'Sin fuente'; ?></p>
+                    <p><i class="fas fa-leaf"></i> Renovable: <?php echo $recurso['energia_renovable'] ? 'Sí' : 'No'; ?></p>
+                    <p><i class="fas fa-clock"></i> Fecha: <?php echo htmlspecialchars($recurso['fecha']); ?></p>
+                </div>
+                <form class="edit-form" method="POST" action="update_resource.php">
                     <input type="hidden" name="id_recurso" value="<?php echo $recurso['id_recurso']; ?>">
                     <input type="text" name="nombre" value="<?php echo htmlspecialchars($recurso['nombre']); ?>" required>
                     <select name="tipo" required>
@@ -176,24 +140,28 @@ $fuentes = getFuentes($pdo);
                         <?php endforeach; ?>
                     </select>
                     <label><input type="checkbox" name="energia_renovable" <?php echo $recurso['energia_renovable'] ? 'checked' : ''; ?>> Energía Renovable</label>
-                    <button type="submit" name="edit">Actualizar</button>
+                    <button type="submit" class="save-btn">Guardar</button>
                 </form>
-                <?php if ($is_admin): ?>
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="id_recurso" value="<?php echo $recurso['id_recurso']; ?>">
-                        <button type="submit" name="delete" onclick="return confirm('¿Seguro que desea eliminar?')">Eliminar</button>
-                    </form>
-                <?php endif; ?>
-            </td>
-        </tr>
+                <div class="actions">
+                    <button class="edit-btn"><i class="fas fa-edit"></i> Editar</button>
+                    <?php if ($is_admin): ?>
+                        <button class="delete-btn" data-id="<?php echo $recurso['id_recurso']; ?>"><i class="fas fa-trash"></i> Eliminar</button>
+                    <?php endif; ?>
+                </div>
+            </div>
         <?php endforeach; ?>
-    </table><br/>
+    </div><br/>
     <br/>
-    <a href="index.php">Regresar a inicio</a>
-    <a href="logout.php">Cerrar sesión</a>
+    <div class="cierre">
+        <a href="index.php">Inicio</a>
+        <a href="logout.php">Cerrar sesión</a>
+    </div>
+    <br/>
+    <br/>
     <footer>
-        <p>&copy; 2025 cloudSostenible | <a href="politicas.html">Políticas</a></p>
+        <p>&copy; 2025 cloudSostenible | <a href="politicas.php">Políticas y Condiciones</a></p>
     </footer>
-    <script src="js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/resources.js"></script>
 </body>
 </html>

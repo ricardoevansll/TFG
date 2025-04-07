@@ -9,9 +9,9 @@ function getUsuarios($pdo) {
 
 $errors = [];
 $success = '';
-$is_admin = $_SESSION['rol'] === 'admin'; // validación si es admin
+$is_admin = $_SESSION['rol'] === 'admin';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_admin) { // Solo admin puede procesar POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_admin) {
     try {
         if (isset($_POST['add'])) {
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
@@ -31,48 +31,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_admin) { // Solo admin puede pr
                 $success = "Usuario agregado exitosamente";
             }
         }
-
-        if (isset($_POST['edit'])) {
-            $id = filter_input(INPUT_POST, 'iduser', FILTER_VALIDATE_INT);
-            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
-            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-            $rol = $_POST['rol'];
-
-            if (!$id) $errors[] = "ID inválido";
-            if (empty($nombre)) $errors[] = "El nombre es requerido";
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Email inválido";
-            if (!in_array($rol, ['admin', 'usuario'])) $errors[] = "Rol inválido";
-
-            if (empty($errors)) {
-                $stmt = $pdo->prepare("UPDATE usuario SET nombre = ?, email = ?, rol = ? WHERE iduser = ?");
-                $stmt->execute([$nombre, $email, $rol, $id]);
-                $success = "Usuario actualizado exitosamente";
-            }
-        }
-
-        if (isset($_POST['delete'])) {
-            $id = filter_input(INPUT_POST, 'iduser', FILTER_VALIDATE_INT);
-            if (!$id) {
-                $errors[] = "ID inválido";
-            } else {
-                $stmt = $pdo->prepare("DELETE FROM usuario WHERE iduser = ?");
-                $stmt->execute([$id]);
-                $success = "Usuario eliminado exitosamente";
-            }
-        }
     } catch (PDOException $e) {
         $errors[] = "Error en la base de datos: " . $e->getMessage();
     }
 }
 
-$usuarios = $is_admin ? getUsuarios($pdo) : []; // Solo listar si es admin
+$usuarios = $is_admin ? getUsuarios($pdo) : [];
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <title>Usuario-cloudSostenible</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/users.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
@@ -85,13 +58,14 @@ $usuarios = $is_admin ? getUsuarios($pdo) : []; // Solo listar si es admin
             <a href="fuentes.php">Fuentes-Energía</a>
             <a href="recursos.php">Recursos</a>
             <a href="alertas.php">Alertas</a>
-            <a href="http://192.168.23.132:3000/d/eef0c6h1h296od/sostenible?orgId=1&from=now-6h&to=now&timezone=browser" target="_blank">Monitoreo</a>
+            <a href="http://192.168.23.132:3000/d/fegfwr5rur8xse/panel-cloudsostenible?orgId=1&from=now-30m&to=now&timezone=browser&refresh=10s" target="_blank">Monitoreo</a>
+            <a href="contacto.php">Contacto</a>
             <a href="logout.php">Salir</a>
         </nav>
     </header>
 
     <h1>Gestión de Usuarios</h1>
-    
+
     <?php if (!empty($errors)): ?>
         <div class="error">
             <?php foreach ($errors as $error): ?>
@@ -110,7 +84,7 @@ $usuarios = $is_admin ? getUsuarios($pdo) : []; // Solo listar si es admin
                 <input type="text" name="nombre" placeholder="Nombre" required>
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Contraseña" required>
-                <select name="rol">
+                <select name="rol" required>
                     <option value="admin">Admin</option>
                     <option value="usuario">Usuario</option>
                 </select>
@@ -118,55 +92,49 @@ $usuarios = $is_admin ? getUsuarios($pdo) : []; // Solo listar si es admin
             </form>
         </div>
 
-        <h2>Listado de Usuarios</h2>
-        <?php if (empty($usuarios)): ?>
-            <p>No hay usuarios para mostrar.</p>
-        <?php else: ?>
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Rol</th>
-                    <th>Fecha Registro</th>
-                    <th>Acciones</th>
-                </tr>
-                <?php foreach ($usuarios as $usuario): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($usuario['iduser']); ?></td>
-                    <td><?php echo htmlspecialchars($usuario['nombre']); ?></td>
-                    <td><?php echo htmlspecialchars($usuario['email']); ?></td>
-                    <td><?php echo htmlspecialchars($usuario['rol']); ?></td>
-                    <td><?php echo htmlspecialchars($usuario['fecha_registro']); ?></td>
-                    <td>
-                        <form method="POST" style="display:inline;">
-                            <input type="hidden" name="iduser" value="<?php echo $usuario['iduser']; ?>">
-                            <input type="text" name="nombre" value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
-                            <input type="email" name="email" value="<?php echo htmlspecialchars($usuario['email']); ?>" required>
-                            <select name="rol">
-                                <option value="admin" <?php echo $usuario['rol'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                <option value="usuario" <?php echo $usuario['rol'] === 'usuario' ? 'selected' : ''; ?>>Usuario</option>
-                            </select>
-                            <button type="submit" name="edit">Actualizar</button>
-                        </form>
-                        <form method="POST" style="display:inline;">
-                            <input type="hidden" name="iduser" value="<?php echo $usuario['iduser']; ?>">
-                            <button type="submit" name="delete" onclick="return confirm('¿Seguro que desea eliminar?')">Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        <?php endif; ?>
+        <div class="search-container">
+            <input type="text" id="search" class="search-bar" placeholder="Buscar por nombre o email...">
+        </div>
+        <div class="card-container" id="users-list">
+            <?php foreach ($usuarios as $usuario): ?>
+                <div class="card <?php echo $usuario['rol'] === 'admin' ? 'rol-admin' : 'rol-usuario'; ?>" data-id="<?php echo $usuario['iduser']; ?>">
+                    <div class="info">
+                        <h3><?php echo htmlspecialchars($usuario['nombre']); ?></h3>
+                        <p><i class="fas fa-envelope"></i> Email: <?php echo htmlspecialchars($usuario['email']); ?></p>
+                        <p><i class="fas fa-user-tag"></i> Rol: <?php echo htmlspecialchars($usuario['rol']); ?></p>
+                        <p><i class="fas fa-clock"></i> Fecha Registro: <?php echo htmlspecialchars($usuario['fecha_registro']); ?></p>
+                    </div>
+                    <form class="edit-form" method="POST" action="update_users.php">
+                        <input type="hidden" name="iduser" value="<?php echo $usuario['iduser']; ?>">
+                        <input type="text" name="nombre" value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
+                        <input type="email" name="email" value="<?php echo htmlspecialchars($usuario['email']); ?>" required>
+                        <select name="rol" required>
+                            <option value="admin" <?php echo $usuario['rol'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                            <option value="usuario" <?php echo $usuario['rol'] === 'usuario' ? 'selected' : ''; ?>>Usuario</option>
+                        </select>
+                        <button type="submit" class="save-btn">Guardar</button>
+                    </form>
+                    <div class="actions">
+                        <button class="edit-btn"><i class="fas fa-edit"></i> Editar</button>
+                        <button class="delete-btn" data-id="<?php echo $usuario['iduser']; ?>"><i class="fas fa-trash"></i> Eliminar</button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
     <?php else: ?>
         <p>No tienes permisos para gestionar usuarios.</p>
     <?php endif; ?><br/>
     <br/>
-    <a href="index.php">Regresar a inicio</a>
-    <a href="logout.php">Cerrar sesión</a>
+    <div class="cierre">
+        <a href="index.php">Inicio</a>
+        <a href="logout.php">Cerrar sesión</a>
+    </div>
+    <br/>
+    <br/>
     <footer>
-        <p>&copy; 2025 cloudSostenible | <a href="politicas.html">Políticas</a></p>
+        <p>&copy; 2025 cloudSostenible | <a href="politicas.php">Políticas y Condiciones</a></p>
     </footer>
-    <script src="js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/users.js"></script>
 </body>
 </html>

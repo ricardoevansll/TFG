@@ -26,9 +26,103 @@ header .logo img {
     color: white;
 }
 
+/* NUEVOS ESTILOS INDEX */
+nav a:hover {
+    color: #ddd;
+}
+/* Estilos para las cajas */
+.boxes-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 20px;
+}
+
+.box {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+/*    width: 300px;*/
+    text-align: center;
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+
+.box:hover {
+    transform: translateY(-5px);
+}
+
+.box-image img {
+    width: 100%;
+/*    height: 150px;*/
+    height: 220px;
+    object-fit: cover;
+}
+
+.box-content {
+    padding: 15px;
+}
+
+.box-content p {
+    margin: 0 0 10px;
+    color: #333;
+}
+
+.box-content a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.box-content a:hover {
+    text-decoration: underline;
+}
+
+/* título y el enlace de cerrar sesión */
+h1 {
+    text-align: center;
+    margin: 20px 0;
+    color:#333
+}
+
+/*
+a[href="logout.php"] {
+    display: block;
+    text-align: center;
+    margin: 20px 0;
+    color: #dc3545;
+    text-decoration: none;
+}*/
+.cierre {
+    display: block;
+    text-align: center;
+    margin: 20px 0;
+    text-decoration: none;
+}
+
+a[href="logout.php"]:hover {
+    text-decoration: underline;
+    color: #dc3545;
+}
+
+a[href="index.php"]:hover {
+    color: #ddd;
+    text-decoration: underline;
+}
+
+a[href="politicas.php"]:hover {
+    color: #ddd;
+    text-decoration: underline;
+}
+
+/* HASTA AQUI NUEVOS ESTILOS INDEX */
+
+/*
 h1, h2 {
     color:#333;
-}
+}*/
 
 
 .error {
@@ -37,8 +131,9 @@ h1, h2 {
 }
 
 .success {
-    color: green;
+    color: white;
     margin: 10px 0;
+    
 }
 
 /*.form-container {
@@ -159,3 +254,104 @@ footer {
 .cookie-popup button:hover {
     background-color: #e67e22;
 }
+
+.volverlog {
+    color: white;
+    text-align: center;
+}
+
+/* Plícicas y condiciones */
+
+.politicas {
+    color: white;
+    display: block;
+    text-align: justify;
+    margin: 20px 0;
+    text-decoration: none;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+/* PARA EL FORMULARIO*/
+.contact-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.contact-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+}
+
+.contact-card h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.contact-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.contact-card input,
+.contact-card textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.contact-card textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.contact-card button {
+    padding: 10px;
+    background: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.contact-card button:hover {
+    background: #0056b3;
+}
+
+.contact-card p {
+    margin-top: 15px;
+}
+
+.contact-card a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.contact-card a:hover {
+    text-decoration: underline;
+}
+
+.contacti a:hover {
+    text-decoration: underline;
+    color: #ddd;
+}
+.contacti a {
+    text-decoration: underline;
+    color: #007bff;
+}
+
