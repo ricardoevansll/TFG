@@ -38,13 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'soytechsoporte@gmail.com'; //correo
-            $mail->Password = 'fszo tmig ybug sinp';   //contraseña de aplicación
+            $mail->Username = 'soporte@gmail.com'; //correo
+            $mail->Password = 'xxxx xxxx xxxx xxxx';   //contraseña de aplicación
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = 587;
 
-            $mail->setFrom('soytechsoporte@gmail.com', 'cloudSostenible');
-            $mail->addAddress('soytechsoporte@gmail.com'); // administrador
+            $mail->setFrom('soporte@gmail.com', 'cloudSostenible');
+            $mail->addAddress('soporte@gmail.com'); // administrador
 
             $mail->isHTML(true);
             $mail->Subject = 'Nuevo mensaje de contacto - ' . $nombre;

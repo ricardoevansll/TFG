@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->Port = 587;
 
                 // Remitente y destinatario
-                $mail->setFrom('soytechsoporte@gmail.com', 'cloudSostenible');
+                $mail->setFrom('soporte@gmail.com', 'cloudSostenible');
                 $mail->addAddress($email);
 
                 // Contenido del correo
